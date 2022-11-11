@@ -1,8 +1,9 @@
+import { createClient } from "@supabase/supabase-js";
 import React from "react";
 import { StyledRegisterVideo } from "./style";
 
-function useForm(){
-    const [values, setValues] = React.useState({titulo: "", url:""})
+function useForm(props){
+    const [values, setValues] = React.useState(props.initialValues)
 
     return {
         values,
@@ -21,10 +22,16 @@ function useForm(){
     };
 }
 
+const PROJECT_URL="https://pqgvvhazvgkwthjccyoy.supabase.co";
+const PUBLIC_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxZ3Z2aGF6dmdrd3RoamNjeW95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2NjgxOTA1MTUsImV4cCI6MTk4Mzc2NjUxNX0.FYhZT7Od_0lNrE0FmawjkjaBJGIkccXP2xNRNxNsw6E"
+const supabase = createClient(PROJECT_URL,PUBLIC_KEY)
 
+function getThumbnail(url){
+    return `https://img.youtube.com/vi/${url.split("v=")[1]}/hqdefault.jpg`
+}
 export default function RegisterVideo(){
     const formCadastro = useForm({
-        initialValue: {titulo: "testando custom", url:"olar hook"}
+        initialValues: {titulo: "Frost punk", url:"https://www.youtube.com/watch?v=QsqatJxAUtk"}
     })
     const [formVisivel, setFormVisivel] = React.useState(false)
     return(
@@ -34,7 +41,21 @@ export default function RegisterVideo(){
             </button>
             
             { formVisivel ? 
-            <form>
+            <form onSubmit={(evento) =>{
+                evento.preventDefault();
+                supabase.from("video").insert({
+                    title: formCadastro.values.titulo,
+                    url: formCadastro.values.url,
+                    thumb: getThumbnail(formCadastro.values.url),
+                    playlist: "jogos"
+                })
+                .then((oqueveio) => {
+                    console.log(oqueveio);
+                })
+                .catch((err)=>{
+                    console.log(err)
+                })
+            }}>
                 <div>
                     <button className="close-modal" onClick={() => setFormVisivel(false)}>
                         X
